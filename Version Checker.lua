@@ -1,5 +1,4 @@
 -- requires that the google play webstore listing description contains "Current App Version: digit(decimal)digit(decimal)digit+"
-
 local current_build = system.getInfo("appVersionString")
 local function networkListener(event)
     if (event.isError) then
@@ -44,6 +43,31 @@ local function networkListener(event)
 end
 
 function CheckForUpdates()
-    local data = network.request("link to google play webstore app listing", "POST", networkListener)
+    local data = network.request("url to GP webstore listing", "POST", networkListener)
 end
-CheckForUpdates()
+
+function connectedToInternet()
+    local bool = nil
+    local check = require("socket").tcp()
+    check:settimeout(10000)
+    local result = check:connect("www.google.com", 80)
+    if not (result == nil) then
+        bool = true
+    else
+        bool = false
+    end
+    check:close()
+    check = nil
+    return bool
+end
+
+if (connectedToInternet() == true) then
+    CheckForUpdates()
+else
+    local height_from_bottom = -100
+    application_version = display.newText( "No Internet Connection", display.viewableContentWidth / 2, display.viewableContentHeight / 2, native.systemFontBold, 10 )
+    application_version:setFillColor(1, 0.9, 0.5)
+    application_version.x = display.contentCenterX
+    application_version.y = display.contentCenterX + display.contentCenterY - height_from_bottom
+    application_version.alpha = 0.50
+end
